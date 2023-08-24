@@ -11,11 +11,11 @@ import dev.schlaubi.telegram.deppgpt.database.GptThread
 import dev.schlaubi.telegram.deppgpt.utils.blocking
 import dev.schlaubi.telegram.deppgpt.utils.reply
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.datetime.Clock
 
 context(Bot)
 suspend fun TextHandlerEnvironment.handleMessage() {
     if (message.text?.startsWith('/') == true) return
+    if (message.chat.type != "private" && message.text?.startsWith("@deppgpt") == false) return
     val input = message.text
     blocking {
         bot.sendChatAction(ChatId.fromId(message.chat.id), ChatAction.TYPING)
@@ -41,5 +41,7 @@ suspend fun TextHandlerEnvironment.handleMessage() {
         }
     }
 
-    reply(newConversation.messages.last().content)
+    reply(
+        newConversation.messages.last().content,
+        replyToMessageId = message.messageId.takeIf { message.chat.type != "private" })
 }

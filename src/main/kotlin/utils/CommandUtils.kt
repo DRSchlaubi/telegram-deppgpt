@@ -12,6 +12,6 @@ suspend fun CommandHandlerEnvironment.reply(message: String, parseMode: ParseMod
 }
 
 context(Bot)
-suspend fun TextHandlerEnvironment.reply(message: String) = blocking {
-    bot.sendMessage(ChatId.fromId(this@reply.message.chat.id), message)
+suspend fun TextHandlerEnvironment.reply(message: String, replyToMessageId: Long? = null) = blocking {
+    bot.sendMessage(ChatId.fromId(this@reply.message.chat.id), message, replyToMessageId = replyToMessageId)
 }
