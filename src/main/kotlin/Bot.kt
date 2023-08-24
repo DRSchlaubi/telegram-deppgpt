@@ -47,7 +47,7 @@ class Bot {
 
     fun start() {
         if (Config.USE_WEBHOOK) {
-            embeddedServer(Netty) {
+            embeddedServer(Netty, port = Config.PORT) {
                 routing {
                     post("/${Config.TELEGRAM_API_KEY}") {
                         telegram.processUpdate(call.receiveText())
