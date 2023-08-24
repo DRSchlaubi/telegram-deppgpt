@@ -33,12 +33,14 @@ class Bot {
             startCommand()
             privacyCommand()
 
-            telegramError { LOG.error("Telegram request failed: {}", error) }
+            telegramError { LOG.error("Telegram request failed: {}", error.getErrorMessage()) }
         }
 
         if (Config.USE_WEBHOOK) {
             webhook {
-                url = Config.HOSTNAME
+                url = URLBuilder(Config.HOSTNAME).apply {
+                    appendPathSegments(Config.TELEGRAM_API_KEY)
+                }.buildString()
             }
         }
     }
