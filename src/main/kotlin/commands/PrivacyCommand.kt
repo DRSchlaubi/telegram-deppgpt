@@ -19,5 +19,5 @@ fun Dispatcher.privacyCommand() = command("privacy") {
         Alle Nachrichten werden mit dem Postillon geteilt, dessen Datenschutzerklärung [hier](https://www.der-postillon.com/p/blog-page_9.html) auffindbar ist
         
         **Dieser Bot steht in keiner offiziellen Partnerschaft mit dem Postillon oder Steckenpferd Enterprises UG**
-    """.trimIndent(), parseMode = ParseMode.MARKDOWN_V2)
+    """.trimIndent(), parseMode = ParseMode.MARKDOWN)
 }
