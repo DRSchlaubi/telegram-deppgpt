@@ -1,8 +1,5 @@
 package dev.schlaubi.telegram.deppgpt.client
 
-import dev.schlaubi.telegram.deppgpt.client.models.Message
-import dev.schlaubi.telegram.deppgpt.client.models.MessageRequest
-import dev.schlaubi.telegram.deppgpt.client.models.MessageResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -10,8 +7,28 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 
 private const val baseUrl = "https://europe-west1-deppgpt.cloudfunctions.net/DeppGPTRelease221"
+
+@Serializable
+data class Message(val role: Role, val content: String) {
+    @Serializable
+    enum class Role {
+        @SerialName("assistant")
+        ASSISTANT,
+
+        @SerialName("user")
+        USER
+    }
+}
+
+@Serializable
+data class MessageRequest(val maxMessages: Int, val messages: List<Message>)
+
+@Serializable
+data class MessageResponse(val answer: String, val totalTokens: Int)
 
 object GptClient {
     private val client = HttpClient {

@@ -1,4 +1,4 @@
-FROM eclipse-temurin:20-jre-alpine
+FROM eclipse-temurin:22-jre-alpine
 
 WORKDIR /usr/app
 COPY build/install/deppgpt-telegram .

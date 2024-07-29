@@ -65,6 +65,4 @@ class Bot {
 
 }
 
-fun main() {
-    Bot().start()
-}
+fun main() = Bot().start()

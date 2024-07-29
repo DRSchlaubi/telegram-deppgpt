@@ -1,8 +1,8 @@
 package dev.schlaubi.telegram.deppgpt.database
 
 import dev.schlaubi.telegram.deppgpt.client.GptClient
-import dev.schlaubi.telegram.deppgpt.client.models.Message
-import dev.schlaubi.telegram.deppgpt.client.models.MessageRequest
+import dev.schlaubi.telegram.deppgpt.client.Message
+import dev.schlaubi.telegram.deppgpt.client.MessageRequest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
