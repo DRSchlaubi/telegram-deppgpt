@@ -1,47 +1,52 @@
 package dev.schlaubi.telegram.deppgpt.core
 
-import com.github.kotlintelegrambot.dispatcher.handlers.TextHandlerEnvironment
-import com.github.kotlintelegrambot.entities.ChatAction
-import com.github.kotlintelegrambot.entities.ChatId
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
+import dev.inmo.tgbotapi.extensions.api.send.reply
+import dev.inmo.tgbotapi.extensions.api.send.sendMessage
+import dev.inmo.tgbotapi.extensions.api.send.withTypingAction
+import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
+import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onContentMessage
+import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onText
+import dev.inmo.tgbotapi.types.chat.PreviewPrivateChat
+import dev.inmo.tgbotapi.types.message.content.TextContent
 import dev.schlaubi.telegram.deppgpt.Bot
 import dev.schlaubi.telegram.deppgpt.client.GptClient
 import dev.schlaubi.telegram.deppgpt.database.GptThread
-import dev.schlaubi.telegram.deppgpt.utils.blocking
-import dev.schlaubi.telegram.deppgpt.utils.reply
 import kotlinx.coroutines.flow.firstOrNull
 
 context(Bot)
-suspend fun TextHandlerEnvironment.handleMessage() {
-    if (message.text?.startsWith('/') == true) return
-    if (message.chat.type != "private" && message.text?.startsWith("@deppgpt") == false) return
-    val input = message.text
-    blocking {
-        bot.sendChatAction(ChatId.fromId(message.chat.id), ChatAction.TYPING)
-    }
-    if (input.isNullOrBlank()) {
-        reply(GptClient.requestMessage("Wieso kannst du nur Text verstehen?"))
-        return
-    }
-
-    val conversation = database.threads.find(Filters.eq("_id", message.chat.id)).firstOrNull()
-
-    val newConversation = if (conversation == null) {
-        val blankConversation = GptThread(message.chat.id, emptyList())
-        blankConversation.requestAnswer(input).also { finalConversation ->
-            database.threads.insertOne(finalConversation)
+suspend fun BehaviourContext.handleMessages() = onText { message ->
+    val isPrivate = message.chat is PreviewPrivateChat
+    val text = message.content.text
+    if (text.startsWith('/') == true) return@onText
+    if (!isPrivate && !text.startsWith("@deppgpt")) return@onText
+    withTypingAction(message.chat) {
+        if (text.isBlank()) {
+            reply(message, GptClient.requestMessage("Wieso kannst du nur Text verstehen?"))
+            return@withTypingAction
         }
-    } else {
-        conversation.requestAnswer(input).also { finalConversation ->
-            database.threads.updateOne(
-                Filters.eq("_id", message.chat.id),
-                Updates.set("messages", finalConversation.messages)
-            )
+
+        val conversation = database.threads.find(Filters.eq("_id", message.chat.id)).firstOrNull()
+        val newConversation = if (conversation == null) {
+            val blankConversation = GptThread(message.chat.id.chatId.long, emptyList())
+            blankConversation.requestAnswer(text).also { finalConversation ->
+                database.threads.insertOne(finalConversation)
+            }
+        } else {
+            conversation.requestAnswer(text).also { finalConversation ->
+                database.threads.updateOne(
+                    Filters.eq("_id", message.chat.id),
+                    Updates.set("messages", finalConversation.messages)
+                )
+            }
+        }
+
+        val content = newConversation.messages.last().content
+        if (isPrivate) {
+            sendMessage(message.chat, content)
+        } else {
+            reply(message, content)
         }
     }
-
-    reply(
-        newConversation.messages.last().content,
-        replyToMessageId = message.messageId.takeIf { message.chat.type != "private" })
 }

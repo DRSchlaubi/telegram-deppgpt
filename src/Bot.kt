@@ -1,68 +1,40 @@
 package dev.schlaubi.telegram.deppgpt
 
-import com.github.kotlintelegrambot.bot
-import com.github.kotlintelegrambot.dispatch
-import com.github.kotlintelegrambot.dispatcher.telegramError
-import com.github.kotlintelegrambot.dispatcher.text
-import com.github.kotlintelegrambot.webhook
-import dev.schlaubi.telegram.deppgpt.commands.deleteCommand
-import dev.schlaubi.telegram.deppgpt.commands.privacyCommand
-import dev.schlaubi.telegram.deppgpt.commands.startCommand
+import dev.inmo.tgbotapi.bot.ktor.telegramBot
+import dev.inmo.tgbotapi.extensions.behaviour_builder.buildBehaviour
+import dev.inmo.tgbotapi.extensions.utils.updates.retrieving.setWebhookInfoAndStartListenWebhooks
+import dev.inmo.tgbotapi.extensions.utils.updates.retrieving.startGettingOfUpdatesByLongPolling
+import dev.inmo.tgbotapi.requests.webhook.SetWebhook
+import dev.schlaubi.telegram.deppgpt.commands.registerCommands
 import dev.schlaubi.telegram.deppgpt.config.Config
-import dev.schlaubi.telegram.deppgpt.core.handleMessage
+import dev.schlaubi.telegram.deppgpt.core.handleMessages
 import dev.schlaubi.telegram.deppgpt.database.Database
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.engine.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.netty.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import org.slf4j.LoggerFactory
 
-private val LOG = LoggerFactory.getLogger(Bot::class.java)
+private val LOG = KotlinLogging.logger { }
 
 class Bot {
-    private val telegram = bot {
-        token = Config.TELEGRAM_API_KEY
-
-        dispatch {
-            text { handleMessage() }
-
-            deleteCommand()
-            startCommand()
-            privacyCommand()
-
-            telegramError { LOG.error("Telegram request failed: {}", error.getErrorMessage()) }
-        }
-
-        if (Config.USE_WEBHOOK) {
-            webhook {
-                url = URLBuilder(Config.HOSTNAME).apply {
-                    appendPathSegments(Config.TELEGRAM_API_KEY)
-                }.buildString()
-            }
-        }
-    }
-
+    private val telegram = telegramBot(Config.TELEGRAM_API_KEY)
     val database = Database()
 
-    fun start() {
+    suspend fun start() {
+        val botBehavior = telegram.buildBehaviour {
+            registerCommands()
+            handleMessages()
+        }
         if (Config.USE_WEBHOOK) {
-            embeddedServer(Netty, port = Config.PORT) {
-                routing {
-                    post("/${Config.TELEGRAM_API_KEY}") {
-                        telegram.processUpdate(call.receiveText())
-                        call.respond(HttpStatusCode.OK)
-                    }
-                }
-            }.start()
-            telegram.startWebhook()
+            botBehavior.setWebhookInfoAndStartListenWebhooks(
+                Config.PORT,
+                Netty,
+                setWebhookRequest = SetWebhook(Config.HOSTNAME),
+                exceptionsHandler = { LOG.error(it) { "An error occurred while handling a request" } },
+                block = botBehavior.asUpdateReceiver
+            )
         } else {
-            telegram.startPolling()
+            botBehavior.startGettingOfUpdatesByLongPolling(updatesReceiver = botBehavior.asUpdateReceiver)
         }
     }
-
 }
 
-fun main() = Bot().start()
+suspend fun main() = Bot().start()

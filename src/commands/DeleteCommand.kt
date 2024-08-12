@@ -1,14 +1,14 @@
 package dev.schlaubi.telegram.deppgpt.commands
 
-import com.github.kotlintelegrambot.dispatcher.Dispatcher
-import com.github.kotlintelegrambot.dispatcher.command
 import com.mongodb.client.model.Filters
+import dev.inmo.tgbotapi.extensions.api.send.reply
+import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
+import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onCommand
 import dev.schlaubi.telegram.deppgpt.Bot
-import dev.schlaubi.telegram.deppgpt.utils.reply
 
 context(Bot)
-fun Dispatcher.deleteCommand() = command("delete") {
-    database.threads.findOneAndDelete(Filters.eq("_id", message.chat.id))
+suspend fun BehaviourContext.deleteCommand() = onCommand("delete") {
+    database.threads.findOneAndDelete(Filters.eq("_id", it.chat.id))
 
-    reply("Deine Daten wurden erfolgreich gelöscht, bitte beachte, dass erneut welche gespeichert werden, wenn du eine weitere Nachricht schreibst")
+    reply(it, "Deine Daten wurden erfolgreich gelöscht, bitte beachte, dass erneut welche gespeichert werden, wenn du eine weitere Nachricht schreibst")
 }

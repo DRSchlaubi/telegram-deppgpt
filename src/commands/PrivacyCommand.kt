@@ -1,14 +1,16 @@
 package dev.schlaubi.telegram.deppgpt.commands
 
-import com.github.kotlintelegrambot.dispatcher.Dispatcher
-import com.github.kotlintelegrambot.dispatcher.command
-import com.github.kotlintelegrambot.entities.ParseMode
+import dev.inmo.tgbotapi.extensions.api.send.reply
+import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
+import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onCommand
+import dev.inmo.tgbotapi.types.message.MarkdownParseMode
 import dev.schlaubi.telegram.deppgpt.Bot
-import dev.schlaubi.telegram.deppgpt.utils.reply
 
 context(Bot)
-fun Dispatcher.privacyCommand() = command("privacy") {
-    reply("""
+suspend fun BehaviourContext.privacyCommand() = onCommand("privacy") {
+    reply(
+        it,
+        """
         Dieser Bot speichert die folgenden Daten sobald du eine Nachricht (ausgeschlossen Befehle) an ihn schickst:
         
         - ID des Chats zwischen dir und dem Bot
@@ -19,5 +21,6 @@ fun Dispatcher.privacyCommand() = command("privacy") {
         Alle Nachrichten werden mit dem Postillon geteilt, dessen Datenschutzerklärung [hier](https://www.der-postillon.com/p/blog-page_9.html) auffindbar ist
         
         **Dieser Bot steht in keiner offiziellen Partnerschaft mit dem Postillon oder Steckenpferd Enterprises UG**
-    """.trimIndent(), parseMode = ParseMode.MARKDOWN)
+    """.trimIndent(), parseMode = MarkdownParseMode
+    )
 }

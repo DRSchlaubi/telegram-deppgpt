@@ -9,8 +9,6 @@ settings:
     release: 22
     mainClass: dev.schlaubi.telegram.deppgpt.BotKt
 
-repositories:
-  - https://jitpack.io
 dependencies:
   - $libs.telegram
   - $libs.envconf
@@ -22,3 +20,4 @@ dependencies:
   - $libs.ktor.client.content.negotiation
   - $libs.ktor.serialization.kotlinx.json
   - $libs.logback.classic
+  - $libs.kotlin.logging
