@@ -1,6 +1,6 @@
 FROM eclipse-temurin:22-jre-alpine
 
 WORKDIR /usr/app
-COPY build/install/deppgpt-telegram .
+COPY build/install/telegram-deppgpt .
 
-ENTRYPOINT ["/usr/app/bin/deppgpt-telegram"]
+ENTRYPOINT ["/usr/app/bin/telegram-deppgpt"]
