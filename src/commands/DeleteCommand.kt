@@ -8,7 +8,7 @@ import dev.schlaubi.telegram.deppgpt.Bot
 
 context(Bot)
 suspend fun BehaviourContext.deleteCommand() = onCommand("delete") {
-    database.threads.findOneAndDelete(Filters.eq("_id", it.chat.id))
+    database.threads.findOneAndDelete(Filters.eq("_id", it.chat.id.chatId.long))
 
     reply(it, "Deine Daten wurden erfolgreich gelöscht, bitte beachte, dass erneut welche gespeichert werden, wenn du eine weitere Nachricht schreibst")
 }

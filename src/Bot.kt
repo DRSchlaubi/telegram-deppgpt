@@ -32,7 +32,7 @@ class Bot {
                 block = botBehavior.asUpdateReceiver
             )
         } else {
-            botBehavior.startGettingOfUpdatesByLongPolling(updatesReceiver = botBehavior.asUpdateReceiver)
+            botBehavior.startGettingOfUpdatesByLongPolling(updatesReceiver = botBehavior.asUpdateReceiver).join()
         }
     }
 }
