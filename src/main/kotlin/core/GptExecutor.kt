@@ -14,7 +14,7 @@ import dev.schlaubi.telegram.deppgpt.client.GptClient
 import dev.schlaubi.telegram.deppgpt.database.GptThread
 import kotlinx.coroutines.flow.firstOrNull
 
-context(Bot)
+context(bot: Bot)
 suspend fun BehaviourContext.handleMessages() = onContentMessage { message ->
     val isPrivate = message.chat is PreviewPrivateChat
     val text = (message.content as? TextContent)?.text
@@ -26,15 +26,15 @@ suspend fun BehaviourContext.handleMessages() = onContentMessage { message ->
             return@withTypingAction
         }
 
-        val conversation = database.threads.find(Filters.eq("_id", message.chat.id.chatId.long)).firstOrNull()
+        val conversation = bot.database.threads.find(Filters.eq("_id", message.chat.id.chatId.long)).firstOrNull()
         val newConversation = if (conversation == null) {
             val blankConversation = GptThread(message.chat.id.chatId.long, emptyList())
             blankConversation.requestAnswer(text).also { finalConversation ->
-                database.threads.insertOne(finalConversation)
+                bot.database.threads.insertOne(finalConversation)
             }
         } else {
             conversation.requestAnswer(text).also { finalConversation ->
-                database.threads.updateOne(
+                bot.database.threads.updateOne(
                     Filters.eq("_id", message.chat.id),
                     Updates.set("messages", finalConversation.messages)
                 )

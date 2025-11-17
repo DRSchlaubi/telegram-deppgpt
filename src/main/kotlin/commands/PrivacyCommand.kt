@@ -6,7 +6,7 @@ import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onComman
 import dev.inmo.tgbotapi.types.message.MarkdownParseMode
 import dev.schlaubi.telegram.deppgpt.Bot
 
-context(Bot)
+context(_:Bot)
 suspend fun BehaviourContext.privacyCommand() = onCommand("privacy") {
     reply(
         it,
