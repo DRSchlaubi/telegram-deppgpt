@@ -20,3 +20,4 @@ kotlin-logging = { group = "io.github.oshai", name = "kotlin-logging", version =
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
